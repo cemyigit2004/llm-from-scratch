@@ -10,13 +10,19 @@ class GPTConfig:
     vocab_size: int = 50257
     context_length: int = 128
     d_model: int = 384
+    n_heads: int = 6
 
 class CausalSelfAttention(nn.Module):
 
     def __init__(self, config: GPTConfig):
         super().__init__()
 
+        assert config.d_model % config.n_heads == 0
+
+
         self.d_model = config.d_model
+        self.n_heads = config.n_heads
+        self.head_dim = config.d_model // config.n_heads
 
         self.query = nn.Linear(
             config.d_model,
@@ -44,9 +50,26 @@ class CausalSelfAttention(nn.Module):
         k = self.key(x)
         v = self.value(x)
 
+          # [B,T,C]
+        # ->
+        # [B,T,H,D]
+        q = q.view(B, T, self.n_heads, self.head_dim)
+        k = k.view(B, T, self.n_heads, self.head_dim)
+        v = v.view(B, T, self.n_heads, self.head_dim)
+
+        # [B,T,H,D]
+        # ->
+        # [B,H,T,D]
+        q = q.transpose(1, 2)
+        k = k.transpose(1, 2)
+        v = v.transpose(1, 2)
+
         attention_scores = q @ k.transpose(-2, -1)
 
-        attention_scores = attention_scores / math.sqrt(C)
+        attention_scores = (
+            attention_scores
+            / math.sqrt(self.head_dim)
+        )
 
         # 1) Kim kime bakabilir?
         mask = torch.tril(
@@ -65,8 +88,24 @@ class CausalSelfAttention(nn.Module):
             dim=-1
         )
 
-        # 4) Bu ağırlıklara göre Value'lardan bilgi topla
+        # [B,H,T,T] @ [B,H,T,D]
+        # ->
+        # [B,H,T,D]
         output = attention_weights @ v
+
+        # [B,H,T,D]
+        # ->
+        # [B,T,H,D]
+        output = output.transpose(1, 2)
+
+        # [B,T,H,D]
+        # ->
+        # [B,T,C]
+        output = output.contiguous().view(
+            B,
+            T,
+            C
+        )
 
         return output
 

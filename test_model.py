@@ -6,7 +6,8 @@ from model import GPT, GPTConfig, CausalSelfAttention
 config = GPTConfig(
     vocab_size=50257,
     context_length=128,
-    d_model=384
+    d_model=384,
+    n_heads=6
 )
 
 model = GPT(config)
@@ -45,7 +46,6 @@ print("\nİlk token embedding shape:")
 print(output[0, 0].shape)
 
 
-attention = CausalSelfAttention(config)
 
 #q, k, v = attention(output)
 
@@ -68,3 +68,9 @@ print(output.shape)
 
 print("\nAttention output:")
 print(attention_output.shape)
+
+print("\nHead sayısı:")
+print(attention.n_heads)
+
+print("\nHead dimension:")
+print(attention.head_dim)
