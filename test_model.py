@@ -1,6 +1,6 @@
 import torch
 
-from model import GPT, GPTConfig, CausalSelfAttention
+from model import GPT, GPTConfig, CausalSelfAttention, TransformerBlock
 
 
 config = GPTConfig(
@@ -11,6 +11,9 @@ config = GPTConfig(
 )
 
 model = GPT(config)
+block = TransformerBlock(config)
+
+
 
 
 print("Token embedding matrix:")
@@ -74,3 +77,16 @@ print(attention.n_heads)
 
 print("\nHead dimension:")
 print(attention.head_dim)
+
+print("-------------------------------------------")
+
+block = TransformerBlock(config)
+
+block_output = block(output)
+
+print("\nTransformer Block:")
+print("Input shape:")
+print(output.shape)
+
+print("Output shape:")
+print(block_output.shape)

@@ -12,6 +12,43 @@ class GPTConfig:
     d_model: int = 384
     n_heads: int = 6
 
+
+
+class TransformerBlock(nn.Module):
+
+    def __init__(self, config: GPTConfig):
+        super().__init__()
+
+        # BURADA self.ln1 OLUŞUYOR
+        self.ln1 = nn.LayerNorm(
+            config.d_model
+        )
+
+        # BURADA self.attention OLUŞUYOR
+        # Yukarıdaki CausalSelfAttention class'ını kullanıyoruz
+        self.attention = CausalSelfAttention(
+            config
+        )
+
+    def forward(self, x):
+
+        # x:
+        # [B,T,C]
+
+        # 1) Pre-Norm
+        normalized_x = self.ln1(x)
+
+        # 2) Multi-Head Causal Self-Attention
+        attention_output = self.attention(
+            normalized_x
+        )
+
+        # 3) Residual connection
+        x = x + attention_output
+
+        return x
+
+
 class CausalSelfAttention(nn.Module):
 
     def __init__(self, config: GPTConfig):
