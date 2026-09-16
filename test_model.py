@@ -1,6 +1,6 @@
 import torch
 
-from model import GPT, GPTConfig, CausalSelfAttention, TransformerBlock
+from model import GPT, GPTConfig, CausalSelfAttention, TransformerBlock,MLP
 
 
 config = GPTConfig(
@@ -90,3 +90,21 @@ print(output.shape)
 
 print("Output shape:")
 print(block_output.shape)
+
+
+print("-------------------------------------------")
+
+
+block_output = block(output)
+
+print("\nTransformer Block Input:")
+print(output.shape)
+
+print("\nTransformer Block Output:")
+print(block_output.shape)
+
+print("\nMLP fc1 weight:")
+print(block.mlp.fc1.weight.shape)
+
+print("\nMLP fc2 weight:")
+print(block.mlp.fc2.weight.shape)

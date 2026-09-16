@@ -19,6 +19,7 @@ class TransformerBlock(nn.Module):
     def __init__(self, config: GPTConfig):
         super().__init__()
 
+        # Attention tarafı
         # BURADA self.ln1 OLUŞUYOR
         self.ln1 = nn.LayerNorm(
             config.d_model
@@ -30,10 +31,18 @@ class TransformerBlock(nn.Module):
             config
         )
 
+        # MLP tarafı
+        self.ln2 = nn.LayerNorm(config.d_model)
+        self.mlp = MLP(config)
+
     def forward(self, x):
 
         # x:
         # [B,T,C]
+
+        # =========================
+        # 1. Attention
+        # =========================
 
         # 1) Pre-Norm
         normalized_x = self.ln1(x)
@@ -43,8 +52,21 @@ class TransformerBlock(nn.Module):
             normalized_x
         )
 
-        # 3) Residual connection
+        # İlk residual connection
         x = x + attention_output
+
+        # =========================
+        # 2. MLP
+        # =========================
+
+        normalized_x = self.ln2(x)
+
+        mlp_output = self.mlp(
+            normalized_x
+        )
+
+        # İkinci residual connection
+        x = x + mlp_output
 
         return x
 
@@ -147,8 +169,40 @@ class CausalSelfAttention(nn.Module):
         return output
 
 
+class MLP(nn.Module):
 
-    
+    def __init__(self, config: GPTConfig):
+        super().__init__()
+
+        hidden_dim = 4 * config.d_model
+
+        self.fc1 = nn.Linear(
+            config.d_model,
+            hidden_dim
+        )
+
+        self.activation = nn.GELU()
+
+        self.fc2 = nn.Linear(
+            hidden_dim,
+            config.d_model
+        )
+
+    def forward(self, x):
+
+        # [B,T,384] -> [B,T,1536]
+        x = self.fc1(x)
+
+        # Shape değişmez
+        # [B,T,1536]
+        x = self.activation(x)
+
+        # [B,T,1536] -> [B,T,384]
+        x = self.fc2(x)
+
+        return x
+
+
 class GPT(nn.Module):
 
     def __init__(self, config: GPTConfig):
