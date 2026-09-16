@@ -1,6 +1,6 @@
 import torch
 
-from model import GPT, GPTConfig
+from model import GPT, GPTConfig, CausalSelfAttention
 
 
 config = GPTConfig(
@@ -43,3 +43,28 @@ print(output[0, 0])
 
 print("\nİlk token embedding shape:")
 print(output[0, 0].shape)
+
+
+attention = CausalSelfAttention(config)
+
+#q, k, v = attention(output)
+
+"""print("\nQ shape:")
+print(q.shape)
+
+print("\nK shape:")
+print(k.shape)
+
+print("\nV shape:")
+print(v.shape)"""
+
+
+attention = CausalSelfAttention(config)
+
+attention_output = attention(output)
+
+print("\nAttention input:")
+print(output.shape)
+
+print("\nAttention output:")
+print(attention_output.shape)
