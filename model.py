@@ -11,6 +11,7 @@ class GPTConfig:
     context_length: int = 128
     d_model: int = 384
     n_heads: int = 6
+    n_layers: int = 6  
 
 
 
@@ -222,6 +223,21 @@ class GPT(nn.Module):
             config.d_model
         )
 
+        self.blocks = nn.ModuleList(
+            [
+            TransformerBlock(config)
+            for _ in range(config.n_layers)
+            ]
+        )
+
+        self.final_ln = nn.LayerNorm(config.d_model)
+
+        self.lm_head = nn.Linear(
+            config.d_model,
+            config.vocab_size,
+            bias=False
+        )
+
     def forward(self, idx):
 
         B, T = idx.shape
@@ -250,4 +266,12 @@ class GPT(nn.Module):
         # [B, T, C] + [T, C]
         x = token_embeddings + position_embeddings
 
-        return x
+        for block in self.blocks:
+            x = block(x)
+
+
+        x = self.final_ln(x)  
+
+        logits = self.lm_head(x)
+
+        return logits
