@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import torch
 from torch.utils.data import DataLoader, random_split
 
@@ -76,7 +78,43 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
     T_max=num_epochs
 )
 
-for epoch in range(num_epochs):
+
+# ==========================================
+# 6. CHECKPOINT LOAD (if exists)
+# ==========================================
+
+start_epoch = 0
+
+checkpoint_path = Path("checkpoints/latest.pt")
+
+if checkpoint_path.exists():
+
+    checkpoint = torch.load(
+        checkpoint_path,
+        map_location=device
+    )
+
+    model.load_state_dict(
+        checkpoint["model_state_dict"]
+    )
+
+    optimizer.load_state_dict(
+        checkpoint["optimizer_state_dict"]
+    )
+
+    scheduler.load_state_dict(
+        checkpoint["scheduler_state_dict"]
+    )
+
+    start_epoch = checkpoint["epoch"] + 1
+
+    print(
+        f"Checkpoint loaded. "
+        f"Continuing from epoch {start_epoch + 1}."
+    )
+
+
+for epoch in range(start_epoch, num_epochs):
 
     # ======================================
     # TRAINING
@@ -155,4 +193,23 @@ for epoch in range(num_epochs):
         f"Val Loss: {average_val_loss:.4f} | "
         f"Perplexity: {perplexity:.2f} | "
         f"LR: {current_lr:.6f}"
+    )
+
+
+    # ======================================
+    # CHECKPOINT SAVE
+    # ======================================
+
+    checkpoint = {
+        "epoch": epoch,
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "scheduler_state_dict": scheduler.state_dict(),
+        "train_loss": average_train_loss,
+        "val_loss": average_val_loss,
+    }
+
+    torch.save(
+        checkpoint,
+        "checkpoints/latest.pt"
     )
