@@ -57,48 +57,39 @@ optimizer = torch.optim.AdamW(
 
 
 # ==========================================
-# 6. TRAINING MODE
+# 6. TRAINING
 # ==========================================
+
+num_epochs = 5
 
 model.train()
 
+for epoch in range(num_epochs):
 
-# ==========================================
-# 7. TRAINING LOOP
-# ==========================================
+    total_loss = 0.0
 
-for x, y in dataloader:
+    for x, y in dataloader:
 
-    # CPU -> GPU
-    x = x.to(device)
-    y = y.to(device)
+        x = x.to(device)
+        y = y.to(device)
 
-    # --------------------------
-    # FORWARD
-    # --------------------------
+        # 1. Forward
+        logits, loss = model(x, y)
 
-    logits, loss = model(x, y)
+        # 2. Eski gradientleri temizle
+        optimizer.zero_grad()
 
-    # --------------------------
-    # GRADIENTLERİ TEMİZLE
-    # --------------------------
+        # 3. Backpropagation
+        loss.backward()
 
-    optimizer.zero_grad()
+        # 4. Weightleri güncelle
+        optimizer.step()
 
-    # --------------------------
-    # BACKPROPAGATION
-    # --------------------------
+        total_loss += loss.item()
 
-    loss.backward()
+    average_loss = total_loss / len(dataloader)
 
-    # --------------------------
-    # WEIGHT UPDATE
-    # --------------------------
-
-    optimizer.step()
-
-    # --------------------------
-    # LOSS'U GÖSTER
-    # --------------------------
-
-    print("Loss:", loss.item())
+    print(
+        f"Epoch {epoch + 1}/{num_epochs} "
+        f"- Loss: {average_loss:.4f}"
+    )
