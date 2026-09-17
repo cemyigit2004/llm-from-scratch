@@ -129,6 +129,8 @@ for epoch in range(num_epochs):
         total_val_loss / len(val_loader)
     )
 
+    perplexity = torch.exp(torch.tensor(average_val_loss))
+
 
     # ======================================
     # RESULTS
@@ -138,4 +140,5 @@ for epoch in range(num_epochs):
         f"Epoch {epoch + 1}/{num_epochs} | "
         f"Train Loss: {average_train_loss:.4f} | "
         f"Val Loss: {average_val_loss:.4f}"
+        f"Perplexity: {perplexity:.2f}"
     )
