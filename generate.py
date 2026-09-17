@@ -75,6 +75,7 @@ idx = torch.tensor(
 
 max_new_tokens = 30
 temperature = 0.8
+top_k = 50
 
 with torch.no_grad():
 
@@ -95,6 +96,18 @@ with torch.no_grad():
 
         next_token_logits = (
             next_token_logits / temperature
+        )
+
+        top_k_values, _ = torch.topk(
+            next_token_logits,
+            k=top_k
+        )
+
+        threshold = top_k_values[:, -1].unsqueeze(-1)
+
+        next_token_logits = next_token_logits.masked_fill(
+            next_token_logits < threshold,
+            float("-inf")
         )
 
         probabilities = torch.softmax(
