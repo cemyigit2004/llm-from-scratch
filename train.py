@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 
 from dataset import LMDataset
 from model import GPT, GPTConfig
@@ -30,10 +30,24 @@ dataset = LMDataset(
     context_length=config.context_length
 )
 
-dataloader = DataLoader(
+train_size = int(0.9 * len(dataset))
+val_size = len(dataset) - train_size
+
+train_dataset, val_dataset = random_split(
     dataset,
+    [train_size, val_size]
+)
+
+train_loader = DataLoader(
+    train_dataset,
     batch_size=2,
     shuffle=True
+)
+
+val_loader = DataLoader(
+    val_dataset,
+    batch_size=2,
+    shuffle=False
 )
 
 
@@ -56,40 +70,72 @@ optimizer = torch.optim.AdamW(
 )
 
 
-# ==========================================
-# 6. TRAINING
-# ==========================================
-
 num_epochs = 5
-
-model.train()
 
 for epoch in range(num_epochs):
 
-    total_loss = 0.0
+    # ======================================
+    # TRAINING
+    # ======================================
 
-    for x, y in dataloader:
+    model.train()
+
+    total_train_loss = 0.0
+
+    for x, y in train_loader:
 
         x = x.to(device)
         y = y.to(device)
 
-        # 1. Forward
+        # Forward
         logits, loss = model(x, y)
 
-        # 2. Eski gradientleri temizle
+        # Eski gradientleri temizle
         optimizer.zero_grad()
 
-        # 3. Backpropagation
+        # Gradientleri hesapla
         loss.backward()
 
-        # 4. Weightleri güncelle
+        # Weightleri güncelle
         optimizer.step()
 
-        total_loss += loss.item()
+        total_train_loss += loss.item()
 
-    average_loss = total_loss / len(dataloader)
+    average_train_loss = (
+        total_train_loss / len(train_loader)
+    )
+
+
+    # ======================================
+    # VALIDATION
+    # ======================================
+
+    model.eval()
+
+    total_val_loss = 0.0
+
+    with torch.no_grad():
+
+        for x, y in val_loader:
+
+            x = x.to(device)
+            y = y.to(device)
+
+            logits, loss = model(x, y)
+
+            total_val_loss += loss.item()
+
+    average_val_loss = (
+        total_val_loss / len(val_loader)
+    )
+
+
+    # ======================================
+    # RESULTS
+    # ======================================
 
     print(
-        f"Epoch {epoch + 1}/{num_epochs} "
-        f"- Loss: {average_loss:.4f}"
+        f"Epoch {epoch + 1}/{num_epochs} | "
+        f"Train Loss: {average_train_loss:.4f} | "
+        f"Val Loss: {average_val_loss:.4f}"
     )
