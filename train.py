@@ -64,13 +64,17 @@ model = model.to(device)
 # 5. OPTIMIZER
 # ==========================================
 
+num_epochs = 5
+
 optimizer = torch.optim.AdamW(
     model.parameters(),
     lr=3e-4
 )
 
-
-num_epochs = 5
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    optimizer,
+    T_max=num_epochs
+)
 
 for epoch in range(num_epochs):
 
@@ -95,6 +99,11 @@ for epoch in range(num_epochs):
 
         # Gradientleri hesapla
         loss.backward()
+
+        torch.nn.utils.clip_grad_norm_(
+            model.parameters(),
+            max_norm=1.0
+        )
 
         # Weightleri güncelle
         optimizer.step()
@@ -131,14 +140,19 @@ for epoch in range(num_epochs):
 
     perplexity = torch.exp(torch.tensor(average_val_loss))
 
+    scheduler.step()
+
 
     # ======================================
     # RESULTS
     # ======================================
 
+    current_lr = optimizer.param_groups[0]["lr"]
+
     print(
         f"Epoch {epoch + 1}/{num_epochs} | "
         f"Train Loss: {average_train_loss:.4f} | "
-        f"Val Loss: {average_val_loss:.4f}"
-        f"Perplexity: {perplexity:.2f}"
+        f"Val Loss: {average_val_loss:.4f} | "
+        f"Perplexity: {perplexity:.2f} | "
+        f"LR: {current_lr:.6f}"
     )
