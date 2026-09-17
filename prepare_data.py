@@ -8,16 +8,16 @@ OUTPUT_FILE = Path("data/cleaned/data.jsonl")
 
 
 def clean_text(text: str) -> str:
-    # Null karakterlerini kaldır
+    # Remove null characters
     text = text.replace("\x00", "")
 
-    # Windows newline -> standart newline
+    # Windows newline -> standard newline
     text = text.replace("\r\n", "\n")
 
-    # Birden fazla boşluğu teke indir
+    # Collapse multiple spaces into one
     text = re.sub(r"[ \t]+", " ", text)
 
-    # 3+ newline varsa iki newline'a indir
+    # Collapse 3+ newlines into two
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     return text.strip()
@@ -52,7 +52,7 @@ def main():
 
             text = clean_text(obj["text"])
 
-            # Çok kısa / boş document
+            # Too short / empty document
             if len(text) < 50:
                 continue
 
@@ -73,9 +73,9 @@ def main():
 
             kept += 1
 
-    print("Data preparation tamamlandı.")
-    print("Toplam document:", total)
-    print("Tutulan document:", kept)
+    print("Data preparation complete.")
+    print("Total documents:", total)
+    print("Kept documents:", kept)
     print("Duplicate:", duplicates)
     print("Output:", OUTPUT_FILE)
 

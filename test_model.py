@@ -24,7 +24,7 @@ print(model.lm_head.weight.shape)
 
 
 # =========================================================
-# Eski test (lm_head eklenmeden önceki hali) - referans için
+# Old test (before lm_head was added) - kept for reference
 # =========================================================
 
 # from model import GPT, GPTConfig, CausalSelfAttention, TransformerBlock, MLP
@@ -50,7 +50,7 @@ print(model.lm_head.weight.shape)
 #
 #
 # # 2 sequence
-# # Her sequence 16 token
+# # Each sequence has 16 tokens
 # fake_input = torch.randint(
 #     low=0,
 #     high=config.vocab_size,
@@ -68,10 +68,10 @@ print(model.lm_head.weight.shape)
 # print(output.shape)
 #
 #
-# print("\nİlk token'ın embedding'i:")
+# print("\nFirst token's embedding:")
 # print(output[0, 0])
 #
-# print("\nİlk token embedding shape:")
+# print("\nFirst token embedding shape:")
 # print(output[0, 0].shape)
 #
 #
@@ -85,7 +85,7 @@ print(model.lm_head.weight.shape)
 # print("\nAttention output:")
 # print(attention_output.shape)
 #
-# print("\nHead sayısı:")
+# print("\nNumber of heads:")
 # print(attention.n_heads)
 #
 # print("\nHead dimension:")

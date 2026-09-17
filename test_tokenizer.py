@@ -14,20 +14,20 @@ encoded = tokenizer(
     add_special_tokens=False
 )
 
-print("Orijinal text:")
+print("Original text:")
 print(text)
 
-print("\nToken ID'leri:")
+print("\nToken IDs:")
 print(encoded["input_ids"])
 
-print("\nTokenlar:")
+print("\nTokens:")
 print(
     tokenizer.convert_ids_to_tokens(
         encoded["input_ids"]
     )
 )
 
-print("\nDecode edilmiş hali:")
+print("\nDecoded version:")
 print(
     tokenizer.decode(
         encoded["input_ids"]

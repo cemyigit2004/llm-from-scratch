@@ -14,7 +14,7 @@ class LMDataset(Dataset):
     ):
         self.context_length = context_length
 
-        # Hazır GPT-2 tokenizer
+        # Pretrained GPT-2 tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(
             "openai-community/gpt2"
         )
@@ -41,7 +41,7 @@ class LMDataset(Dataset):
 
                 all_tokens.extend(token_ids)
 
-                # Document sonu
+                # End of document
                 all_tokens.append(
                     self.tokenizer.eos_token_id
                 )
@@ -52,7 +52,7 @@ class LMDataset(Dataset):
         )
 
         print(
-            f"Toplam token: {len(self.tokens):,}"
+            f"Total tokens: {len(self.tokens):,}"
         )
 
     def __len__(self):

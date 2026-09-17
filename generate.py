@@ -89,7 +89,7 @@ with torch.no_grad():
 
         logits, _ = model(idx_context)
 
-        # Son pozisyonun logits'leri
+        # Logits of the last position
         next_token_logits = logits[:, -1, :]
 
         # Temperature

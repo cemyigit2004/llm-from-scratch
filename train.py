@@ -135,10 +135,10 @@ for epoch in range(start_epoch, num_epochs):
         # Forward
         logits, loss = model(x, y)
 
-        # Eski gradientleri temizle
+        # Clear old gradients
         optimizer.zero_grad()
 
-        # Gradientleri hesapla
+        # Compute gradients
         loss.backward()
 
         torch.nn.utils.clip_grad_norm_(
@@ -146,7 +146,7 @@ for epoch in range(start_epoch, num_epochs):
             max_norm=1.0
         )
 
-        # Weightleri güncelle
+        # Update weights
         optimizer.step()
 
         total_train_loss += loss.item()

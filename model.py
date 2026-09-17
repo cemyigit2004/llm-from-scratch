@@ -21,19 +21,19 @@ class TransformerBlock(nn.Module):
     def __init__(self, config: GPTConfig):
         super().__init__()
 
-        # Attention tarafı
-        # BURADA self.ln1 OLUŞUYOR
+        # Attention side
+        # self.ln1 IS CREATED HERE
         self.ln1 = nn.LayerNorm(
             config.d_model
         )
 
-        # BURADA self.attention OLUŞUYOR
-        # Yukarıdaki CausalSelfAttention class'ını kullanıyoruz
+        # self.attention IS CREATED HERE
+        # Using the CausalSelfAttention class defined above
         self.attention = CausalSelfAttention(
             config
         )
 
-        # MLP tarafı
+        # MLP side
         self.ln2 = nn.LayerNorm(config.d_model)
         self.mlp = MLP(config)
 
@@ -54,7 +54,7 @@ class TransformerBlock(nn.Module):
             normalized_x
         )
 
-        # İlk residual connection
+        # First residual connection
         x = x + attention_output
 
         # =========================
@@ -67,7 +67,7 @@ class TransformerBlock(nn.Module):
             normalized_x
         )
 
-        # İkinci residual connection
+        # Second residual connection
         x = x + mlp_output
 
         return x
@@ -132,18 +132,18 @@ class CausalSelfAttention(nn.Module):
             / math.sqrt(self.head_dim)
         )
 
-        # 1) Kim kime bakabilir?
+        # 1) Who can attend to whom?
         mask = torch.tril(
             torch.ones(T, T, device=x.device, dtype=torch.bool)
         )
 
-        # 2) Geleceğe bakılan yerleri -∞ yap
+        # 2) Set future positions to -inf
         attention_scores = attention_scores.masked_fill(
             ~mask,
             float("-inf")
         )
 
-        # 3) Skorları attention ağırlıklarına çevir
+        # 3) Convert scores to attention weights
         attention_weights = torch.softmax(
             attention_scores,
             dim=-1
@@ -195,7 +195,7 @@ class MLP(nn.Module):
         # [B,T,384] -> [B,T,1536]
         x = self.fc1(x)
 
-        # Shape değişmez
+        # Shape unchanged
         # [B,T,1536]
         x = self.activation(x)
 
@@ -218,7 +218,7 @@ class GPT(nn.Module):
             config.d_model
         )
 
-        # Token'ın sequence içerisindeki pozisyonu -> embedding vector
+        # Token's position within the sequence -> embedding vector
         self.position_embedding = nn.Embedding(
             config.context_length,
             config.d_model

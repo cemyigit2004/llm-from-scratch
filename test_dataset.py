@@ -8,7 +8,7 @@ dataset = LMDataset(
     context_length=16
 )
 
-print("\nDataset uzunluğu:")
+print("\nDataset length:")
 print(len(dataset))
 
 
