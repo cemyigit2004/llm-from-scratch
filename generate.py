@@ -76,27 +76,30 @@ idx = torch.tensor(
 max_new_tokens = 30
 temperature = 0.8
 top_k = 50
+top_p = 0.9
 
 with torch.no_grad():
 
     for _ in range(max_new_tokens):
 
-        # Context window'dan uzun olursa
-        # sadece son tokenları kullan
         idx_context = idx[
             :,
             -config.context_length:
         ]
 
-        # Model prediction
         logits, _ = model(idx_context)
 
-        # Sadece SON pozisyonun logits'i
+        # Son pozisyonun logits'leri
         next_token_logits = logits[:, -1, :]
 
+        # Temperature
         next_token_logits = (
             next_token_logits / temperature
         )
+
+        # ==============================
+        # TOP-K
+        # ==============================
 
         top_k_values, _ = torch.topk(
             next_token_logits,
@@ -110,17 +113,68 @@ with torch.no_grad():
             float("-inf")
         )
 
-        probabilities = torch.softmax(
+        # ==============================
+        # TOP-P
+        # ==============================
+
+        sorted_logits, sorted_indices = torch.sort(
             next_token_logits,
+            descending=True,
             dim=-1
         )
 
-        next_token = torch.multinomial(
+        sorted_probabilities = torch.softmax(
+            sorted_logits,
+            dim=-1
+        )
+
+        cumulative_probabilities = torch.cumsum(
+            sorted_probabilities,
+            dim=-1
+        )
+
+        sorted_indices_to_remove = (
+            cumulative_probabilities > top_p
+        )
+
+        sorted_indices_to_remove[:, 1:] = (
+            sorted_indices_to_remove[:, :-1].clone()
+        )
+
+        sorted_indices_to_remove[:, 0] = False
+
+        sorted_logits = sorted_logits.masked_fill(
+            sorted_indices_to_remove,
+            float("-inf")
+        )
+
+        # ==============================
+        # SAMPLING
+        # ==============================
+
+        probabilities = torch.softmax(
+            sorted_logits,
+            dim=-1
+        )
+
+        sampled_index = torch.multinomial(
             probabilities,
             num_samples=1
         )
 
-        # Yeni tokenı dizinin sonuna ekle
+        next_token = torch.gather(
+            sorted_indices,
+            dim=-1,
+            index=sampled_index
+        )
+
+        # ==============================
+        # EOS CHECK
+        # ==============================
+
+        if next_token.item() == tokenizer.eos_token_id:
+            break
+
         idx = torch.cat(
             [idx, next_token],
             dim=1
