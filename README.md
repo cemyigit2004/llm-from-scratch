@@ -20,9 +20,9 @@ The goal of this project is to build the complete language-model training pipeli
 - [x] Environment setup
 - [x] CUDA verification
 - [x] Basic dataset preparation
-- [ ] BPE tokenizer
-- [ ] Tokenized dataset
-- [ ] Transformer architecture
+- [x] BPE tokenizer
+- [x] Tokenized dataset
+- [x] Transformer architecture
 - [ ] Pretraining
 - [ ] Evaluation
 - [ ] Text generation
