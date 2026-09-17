@@ -74,6 +74,7 @@ idx = torch.tensor(
 # ==========================================
 
 max_new_tokens = 30
+temperature = 0.8
 
 with torch.no_grad():
 
@@ -92,11 +93,18 @@ with torch.no_grad():
         # Sadece SON pozisyonun logits'i
         next_token_logits = logits[:, -1, :]
 
-        # En yüksek logitli token
-        next_token = torch.argmax(
+        next_token_logits = (
+            next_token_logits / temperature
+        )
+
+        probabilities = torch.softmax(
             next_token_logits,
-            dim=-1,
-            keepdim=True
+            dim=-1
+        )
+
+        next_token = torch.multinomial(
+            probabilities,
+            num_samples=1
         )
 
         # Yeni tokenı dizinin sonuna ekle
