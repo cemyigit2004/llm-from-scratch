@@ -11,7 +11,7 @@ fake_input = torch.randint(
     (2, 16)
 )
 
-logits = model(fake_input)
+logits, loss = model(fake_input)
 
 print("Input shape:")
 print(fake_input.shape)

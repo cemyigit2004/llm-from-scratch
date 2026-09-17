@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 @dataclass
@@ -238,7 +239,7 @@ class GPT(nn.Module):
             bias=False
         )
 
-    def forward(self, idx):
+    def forward(self, idx, targets=None):
 
         B, T = idx.shape
 
@@ -274,4 +275,15 @@ class GPT(nn.Module):
 
         logits = self.lm_head(x)
 
-        return logits
+        loss = None
+
+        if targets is not None:
+
+            # [B,T,vocab_size] -> [B*T, vocab_size]
+            # [B,T]            -> [B*T]
+            loss = F.cross_entropy(
+                logits.view(B * T, -1),
+                targets.view(B * T)
+            )
+
+        return logits, loss
